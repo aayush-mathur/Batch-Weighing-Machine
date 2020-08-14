@@ -1,0 +1,19 @@
+< THE SYMBOL TABLE >  code.bin  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+ANLG                     	0000C     	1         	VAR       	(NOSEG)   
+WEIGHTS                  	0000F     	1         	VAR       	(NOSEG)   
+START                    	00012     	-1        	LABEL     	(NOSEG)   
+READWEIGHT               	0001A     	-1        	LABEL     	(NOSEG)   
+WEIGHTLOOP               	00029     	-1        	LABEL     	(NOSEG)   
+LEOC                     	0003A     	-1        	LABEL     	(NOSEG)   
+HEOC                     	00046     	-1        	LABEL     	(NOSEG)   
+DISPLAY                  	00098     	-1        	LABEL     	(NOSEG)   
+READSTOPALARM            	000CA     	-1        	LABEL     	(NOSEG)   
+X                        	000E0     	-1        	LABEL     	(NOSEG)   
+NMIS                     	000E2     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 19-04-2020  --  23:47:46 ] 
+< END >
+ 

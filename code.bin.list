@@ -1,0 +1,215 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+code.bin -- emu8086 assembler version: 4.08  
+ 
+[ 19-04-2020  --  23:47:46 ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       #make_bin#
+[   2]        :                                       
+[   3]        :                                       #LOAD_SEGMENT=FFFFh#
+[   4]        :                                       #LOAD_OFFSET=0000h#
+[   5]        :                                       
+[   6]        :                                       #CS=0000h#
+[   7]        :                                       #IP=0000h#
+[   8]        :                                       
+[   9]        :                                       #DS=0000h#
+[  10]        :                                       #ES=0000h#
+[  11]        :                                       
+[  12]        :                                       #SS=0000h#
+[  13]        :                                       #SP=FFFEh#
+[  14]        :                                       
+[  15]        :                                       #AX=0000h#
+[  16]        :                                       #BX=0000h#
+[  17]        :                                       #CX=0000h#
+[  18]        :                                       #DX=0000h#
+[  19]        :                                       #SI=0000h#
+[  20]        :                                       #DI=0000h#
+[  21]        :                                       #BP=0000h#
+[  22]        :                                       
+[  23]    0000: EB 10                                 JMP START
+[  24]        :                                       
+[  25]        :                                       ; DEFINED DATA
+[  26]    0002: 00 00 00 00 00 00                     DB 6 DUP(0)
+[  27]    0008: E2 00                                 DW NMIS
+[  28]    000A: 00 00                                 DW 0000
+[  29]        :                                       
+[  30]        :                                       PORTA1 EQU 00H
+[  31]        :                                       PORTB1 EQU 02H
+[  32]        :                                       PORTC1 EQU 04H
+[  33]        :                                       CREG1 EQU 06H
+[  34]        :                                       
+[  35]        :                                       PORTA2 EQU 10H
+[  36]        :                                       PORTB2 EQU 12H
+[  37]        :                                       PORTC2 EQU 14H
+[  38]        :                                       CREG2 EQU 16H
+[  39]        :                                       
+[  40]    000C: 00 01 02                              ANLG DB 00H, 01H, 02H
+[  41]    000F: 00 00 00                              WEIGHTS DB 3 DUP(?)
+[  42]        :                                       
+[  43]    0012:                                       START:
+[  44]        :                                       
+[  45]        :                                       ; SET ALARM OFF INITIALLY
+[  46]    0012: B0 88                                 MOV AL, 10001000B
+[  47]    0014: E6 16                                 OUT CREG2, AL
+[  48]        :                                       
+[  49]    0016: B0 00                                 MOV AL, 00H
+[  50]    0018: E6 14                                 OUT PORTC2, AL
+[  51]        :                                       
+[  52]    001A:                                       READWEIGHT:
+[  53]        :                                       ; INITIALIZE THE REGISTERS
+[  54]    001A: B8 00 00                              MOV AX, 0
+[  55]    001D: BB 00 00                              MOV BX, 0
+[  56]    0020: BD 00 00                              MOV BP, 0
+[  57]    0023: BE 0C 00                              MOV SI, OFFSET ANLG
+[  58]    0026: BF 0F 00                              MOV DI, OFFSET WEIGHTS
+[  59]        :                                       
+[  60]    0029:                                       WEIGHTLOOP:
+[  61]        :                                       ; CONFIGURING CONTROL REGISTER FOR 8255-1
+[  62]    0029: B0 8A                                 MOV AL, 10001010B
+[  63]    002B: E6 06                                 OUT CREG1, AL
+[  64]        :                                       
+[  65]        :                                       ; SELECTING ANALOG I/P CORRESPONDING TO THE CURRENT ITERATION
+[  66]    002D: 8A 04                                 MOV AL, [SI]
+[  67]    002F: E6 00                                 OUT PORTA1, AL
+[  68]    0031: 46                                    INC SI
+[  69]        :                                       
+[  70]        :                                       ; HANDLING THE ALE AND START PINS OF ADC
+[  71]    0032: B0 02                                 MOV AL, 02H
+[  72]    0034: E6 04                                 OUT PORTC1, AL
+[  73]    0036: B0 01                                 MOV AL, 01H
+[  74]    0038: E6 04                                 OUT PORTC1, AL
+[  75]        :                                       ; WAITING FOR THE EOC OF ADC TO GO LOW INITIALLY
+[  76]    003A:                                       LEOC:
+[  77]    003A: E4 04                                 IN AL, PORTC1
+[  78]    003C: 24 10                                 AND AL, 10H
+[  79]    003E: 3C 10                                 CMP AL, 10H
+[  80]    0040: 74 F8                                 JZ LEOC
+[  81]        :                                       
+[  82]        :                                       ; HANDLING THE ALE AND START PINS OF ADC
+[  83]    0042: B0 00                                 MOV AL, 00H
+[  84]    0044: E6 04                                 OUT PORTC1, AL
+[  85]        :                                       ; WATING FOR THE EOC OF ADC TO GO HIGH INDICATING CONVERSION COMPLETION
+[  86]    0046:                                       HEOC:
+[  87]    0046: E4 04                                 IN AL, PORTC1
+[  88]    0048: 24 10                                 AND AL, 10H
+[  89]    004A: 3C 10                                 CMP AL, 10H
+[  90]    004C: 75 F8                                 JNZ HEOC
+[  91]        :                                       
+[  92]        :                                       ; GETTING DIGITAL O/P FROM ADC
+[  93]    004E: E4 02                                 IN AL, PORTB1
+[  94]        :                                       
+[  95]        :                                       ; RECORDING WEIGHT CORRESPONDING TO THE CURRENT ITERATION
+[  96]    0050: 88 05                                 MOV [DI], AL
+[  97]        :                                       
+[  98]    0052: 47                                    INC DI
+[  99]    0053: 45                                    INC BP
+[ 100]    0054: 83 FD 03                              CMP BP, 3
+[ 101]    0057: 75 D0                                 JNZ WEIGHTLOOP
+[ 102]        :                                       
+[ 103]        :                                       
+[ 104]        :                                       ; TAKING THE AVERAGE OF THE 3 WEIGHTS RECORDED
+[ 105]    0059: B8 00 00                              MOV AX, 0
+[ 106]    005C: BB 00 00                              MOV BX, 0
+[ 107]    005F: B9 00 00                              MOV CX, 0
+[ 108]    0062: BA 00 00                              MOV DX, 0
+[ 109]    0065: BF 0F 00                              MOV DI, OFFSET WEIGHTS
+[ 110]        :                                       
+[ 111]    0068: 8A 1D                                 MOV BL, [DI]
+[ 112]    006A: 03 C3                                 ADD AX, BX
+[ 113]    006C: 47                                    INC DI
+[ 114]        :                                       
+[ 115]    006D: 8A 1D                                 MOV BL, [DI]
+[ 116]    006F: 03 C3                                 ADD AX, BX
+[ 117]    0071: 47                                    INC DI
+[ 118]        :                                       
+[ 119]    0072: 8A 1D                                 MOV BL, [DI]
+[ 120]    0074: 03 C3                                 ADD AX, BX
+[ 121]        :                                       
+[ 122]    0076: B1 03                                 MOV CL, 3
+[ 123]    0078: F6 F1                                 DIV CL
+[ 124]        :                                       
+[ 125]    007A: B4 00                                 MOV AH, 0
+[ 126]        :                                       
+[ 127]        :                                       ; CONVERTING DIGITAL O/P TO ACTUAL WEIGHT
+[ 128]        :                                       ; AND GETTING INTEGER AND DECIMAL PART OF THE DATA, I.E. AVG WEIGHT
+[ 129]    007C: B1 C8                                 MOV CL, 200
+[ 130]    007E: F6 E1                                 MUL CL
+[ 131]        :                                       
+[ 132]    0080: B9 64 00                              MOV CX, 100
+[ 133]    0083: F7 E1                                 MUL CX
+[ 134]        :                                       
+[ 135]    0085: B9 00 01                              MOV CX, 256
+[ 136]    0088: F7 F1                                 DIV CX
+[ 137]        :                                       
+[ 138]    008A: B1 64                                 MOV CL, 100
+[ 139]    008C: F6 F1                                 DIV CL
+[ 140]        :                                       
+[ 141]        :                                       ; NOW REGISTER AH HAS THE DECIMAL VAL AND REGISTER AL HAS THE VALUE FOR BEFORE DECIMAL
+[ 142]        :                                       
+[ 143]    008E: 8B D8                                 MOV BX, AX
+[ 144]        :                                       
+[ 145]        :                                       ; ALARM IF WEIGHT GREATER THAN 99
+[ 146]    0090: 3C 63                                 CMP AL, 99
+[ 147]    0092: 72 04                                 JB DISPLAY
+[ 148]    0094: B0 01                                 MOV AL, 01H
+[ 149]    0096: E6 14                                 OUT PORTC2, AL
+[ 150]        :                                       
+[ 151]        :                                       
+[ 152]        :                                       ; DISPLAYING WEIGHT ON 7-SEG DISPLAY
+[ 153]    0098:                                       DISPLAY:
+[ 154]        :                                       ; DISPLAYING INTEGER PART ON 7-SEG DISPLAY
+[ 155]    0098: B8 00 00                              MOV AX, 0
+[ 156]    009B: 8A C3                                 MOV AL, BL
+[ 157]    009D: B1 0A                                 MOV CL, 10
+[ 158]    009F: F6 F1                                 DIV CL
+[ 159]    00A1: 8A D0                                 MOV DL, AL
+[ 160]    00A3: 8A C4                                 MOV AL, AH
+[ 161]    00A5: D0 E0 D0 E0 D0 E0 D0 E0               SHL AL, 4
+[ 162]    00AD: 02 C2                                 ADD AL, DL
+[ 163]    00AF: E6 10                                 OUT PORTA2, AL
+[ 164]        :                                       
+[ 165]        :                                       ; DISPLAYING DECIMAL PART ON 7-SEG DISPLAY
+[ 166]    00B1: B8 00 00                              MOV AX, 0
+[ 167]    00B4: 8A C7                                 MOV AL, BH
+[ 168]    00B6: B1 0A                                 MOV CL, 10
+[ 169]    00B8: F6 F1                                 DIV CL
+[ 170]    00BA: 8A D0                                 MOV DL, AL
+[ 171]    00BC: 8A C4                                 MOV AL, AH
+[ 172]    00BE: D0 E0 D0 E0 D0 E0 D0 E0               SHL AL, 4
+[ 173]    00C6: 02 C2                                 ADD AL, DL
+[ 174]    00C8: E6 12                                 OUT PORTB2, AL
+[ 175]        :                                       
+[ 176]        :                                       ; WAITING FOR 'STOP ALARM' SWITCH TO BE PRESSED (POLLING)
+[ 177]    00CA:                                       READSTOPALARM:
+[ 178]    00CA: B8 00 00                              MOV AX, 0
+[ 179]    00CD: BB 00 00                              MOV BX, 0
+[ 180]    00D0: E4 14                                 IN AL, PORTC2
+[ 181]    00D2: 8A D8                                 MOV BL, AL
+[ 182]    00D4: 80 E3 10                              AND BL, 10H
+[ 183]    00D7: 80 FB 10                              CMP BL, 10H
+[ 184]    00DA: 75 04                                 JNZ X
+[ 185]    00DC: B0 00                                 MOV AL, 00H
+[ 186]    00DE: E6 14                                 OUT PORTC2, AL
+[ 187]        :                                       
+[ 188]    00E0:                                       X:
+[ 189]    00E0: EB E8                                 JMP READSTOPALARM
+[ 190]        :                                       
+[ 191]        :                                       ; ISR OF NMI INTERRUPT - USED TO START READING WEIGHT
+[ 192]    00E2:                                       NMIS:
+[ 193]    00E2: E9 2D FF                              JMP START
+[ 194]        :                                       
+[ 195]    00E5: C3                                    ret
+[ 196]        :                                       
+[ 197]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
